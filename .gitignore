@@ -1,2 +1,5 @@
-mbti*
-data
+data/train/*
+data/test/*
+data/zips
+data/__MACOSX
+data/*.csv
