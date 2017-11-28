@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  15 NOV 2017 14:27
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  28 NOV 2017 12:32
 entering extended mode
- restricted \write18 enabled.
+ \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/Users/coleellison/github/finalML/proposal/proposal.tex
-(/Users/coleellison/github/finalML/proposal/proposal.tex
+**/Users/cthulhu/github/finalML/progress/proposal.tex
+(/Users/cthulhu/github/finalML/progress/proposal.tex
 LaTeX2e <2017-04-15>
 Babel <3.10> and hyphenation patterns for 84 language(s) loaded.
 (/usr/local/texlive/2017/texmf-dist/tex/latex/base/article.cls
@@ -148,16 +148,16 @@ Underfull \hbox (badness 10000) in paragraph at lines 7--11
 (./proposal.aux) ) 
 Here is how much of TeX's memory you used:
  1488 strings out of 492995
- 21795 string characters out of 6132704
+ 21783 string characters out of 6132704
  78266 words of memory out of 5000000
  5055 multiletter control sequences out of 15000+600000
  5150 words of font info for 19 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 39i,4n,25p,277b,107s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 39i,4n,25p,275b,107s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfon
 ts/cm/cmbx12.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/amsfont
 s/cm/cmr10.pfb>
-Output written on proposal.pdf (1 page, 27837 bytes).
+Output written on proposal.pdf (1 page, 27580 bytes).
 PDF statistics:
  16 PDF objects out of 1000 (max. 8388607)
  10 compressed objects within 1 object stream

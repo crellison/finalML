@@ -1,8 +1,8 @@
-PWD /Users/coleellison/github/finalML/proposal
+PWD /Users/cthulhu/github/finalML/progress
 INPUT /usr/local/texlive/2017/texmf.cnf
 INPUT /usr/local/texlive/2017/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2017/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/coleellison/github/finalML/proposal/proposal.tex
+INPUT /Users/cthulhu/github/finalML/progress/proposal.tex
 OUTPUT proposal.log
 INPUT /usr/local/texlive/2017/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/local/texlive/2017/texmf-dist/tex/latex/base/article.cls

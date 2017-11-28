@@ -1,6 +1,6 @@
 # Fdb version 3
-["pdflatex"] 1510774060 "/Users/coleellison/github/finalML/proposal/proposal.tex" "proposal.pdf" "proposal" 1510774060
-  "/Users/coleellison/github/finalML/proposal/proposal.tex" 1510774060 649 4e13c20cd2ebf382902227c9ce535121 ""
+["pdflatex"] 1511890366 "/Users/cthulhu/github/finalML/progress/proposal.tex" "proposal.pdf" "proposal" 1511890366
+  "/Users/cthulhu/github/finalML/progress/proposal.tex" 1511890365 654 46522c4b81f8caeb869c89e61fd7fe5c ""
   "/usr/local/texlive/2017/texmf-dist/fonts/map/fontname/texfonts.map" 1480098670 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm" 1480098701 1324 c910af8c371558dc20f2d7822f66fe64 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/tfm/public/cm/cmr10.tfm" 1480098701 1296 45809c5a464d5f32c8f98ba97c1bb47f ""
@@ -33,9 +33,9 @@
   "/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1495593472 2350277 a699055bee05bf8a40b0504752487295 ""
   "/usr/local/texlive/2017/texmf-var/web2c/pdftex/pdflatex.fmt" 1495593487 4129592 0e6cfee100d68e6d96b92c0258f2ff73 ""
   "/usr/local/texlive/2017/texmf.cnf" 1495593465 577 2b71d4d888f9e5560b2e99985915a9fa ""
-  "proposal.aux" 1510774060 8 a94a2480d3289e625eea47cd1b285758 ""
-  "proposal.tex" 1510774060 649 4e13c20cd2ebf382902227c9ce535121 ""
+  "proposal.aux" 1511890366 8 a94a2480d3289e625eea47cd1b285758 ""
+  "proposal.tex" 1511890365 654 46522c4b81f8caeb869c89e61fd7fe5c ""
   (generated)
-  "proposal.pdf"
   "proposal.log"
+  "proposal.pdf"
   "proposal.aux"
