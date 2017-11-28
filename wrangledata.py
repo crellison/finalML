@@ -7,12 +7,16 @@ TEST_DATA = DATA_DIR + 'test/'
 
 TRAIN_INFO = DATA_DIR + 'train_info.csv'
 
-def get_train_data(scale_dataset=1, randomize=True):
+def get_train_data(scale_dataset=1.0, randomize=True):
   '''
   opens TRAIN_INFO and retrieves the location and artist ID for each painting
   scales down dataset by <scale_dataset> if included
+
+  scale_dataset <float> used to resize the datasdet for debugging/testing purposes
+  randomize <bool> determined whether or not the data is shuffled before it is delivered
   '''
-  assert 0 < scale_dataset <= 1
+  assert 0.0 < scale_dataset <= 1.0
+  assert isinstance(randomize, bool)
 
   with open(TRAIN_INFO, 'r') as csvfile:
     datafile = reader(csvfile, delimiter=',')
@@ -26,15 +30,22 @@ def get_train_data(scale_dataset=1, randomize=True):
 
     linenum = 0
     for row in datafile:
+      # grab the data-fields from the first row
       if not len(headers):
         headers = row
+      # all subsequent rows are data
       else:
-        data.append(row[:2])
+        filename = TRAIN_DATA + row[0] 
+        painterID = row[1]
+        data.append((filename, painterID))
         linenum += 1
 
+      # randomization happens with all datapoints, so only cut out early
+      # if randomization is not requested
       if not randomize and linenum >= datalen:
         break
 
+  # shuffle and shorted the data
   if randomize:
     shuffle(data)
     data = data[:datalen]
