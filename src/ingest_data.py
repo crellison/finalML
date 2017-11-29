@@ -51,14 +51,14 @@ def create_pairs(metadata):
                 # Add a pair of paintings by different artists
                 choose_from_before = random.random() > float(artist_begin_index) / float(m)
 
-                if choose_from_before:
-                    other_painting_index = random.randint(0, artist_begin_index)
-                else:
-                    other_painting_index = random.randint(artist_end_index, m-1)
+                # if choose_from_before:
+                #     other_painting_index = random.randint(0, artist_begin_index)
+                # else:
+                #     other_painting_index = random.randint(artist_end_index, m-1)
 
-                # other_painting_index = artist_begin_index
-                # while other_painting_index >= artist_begin_index and other_painting_index <= artist_end_index:
-                #     other_painting_index = random.randint(0, m-1)
+                other_painting_index = artist_begin_index
+                while other_painting_index >= artist_begin_index and other_painting_index <= artist_end_index:
+                    other_painting_index = random.randint(0, m-1)
 
                 painting_one = metadata[other_painting_index]
                 pairs.append((painting_one, random_painting(metadata, artist_begin_index, artist_end_index)))
