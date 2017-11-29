@@ -64,15 +64,14 @@ def create_pairs():
     same_pairs = [(cur_paintings[i], cur_paintings[num_paintings-1-i], 1) for i in range(num_pairs)]
     pairs.extend(same_pairs)
 
-    # collect num_pairs training examples with different artists
+    # collect 1 training example per painting with different artists
     diff_pairs = []
-    for i in range(num_pairs):
-      cur_painting = choice(cur_paintings)
+    for painting in data[artistID]:
       rand_artist = choice(artists)
       while rand_artist == artistID:
         rand_artist = choice(artists)
       rand_painting = choice(data[rand_artist])
-      diff_pairs.append((cur_painting, rand_painting, 0))
+      diff_pairs.append((painting, rand_painting, 0))
 
     pairs.extend(diff_pairs)
 
@@ -80,11 +79,9 @@ def create_pairs():
 
 def main():
   pairs = create_pairs()
-  print(pairs[1])
-  print(pairs[100])
-  print(pairs[300])
-  print(pairs[1000])
-  print(pairs[4000])
+  m = len(pairs)
+  pos = sum(pair[2] for pair in pairs)
+  print('%i training points with %i positive examples' % (m, pos))
 
 if __name__ == '__main__':
   main()
