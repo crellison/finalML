@@ -1,5 +1,5 @@
 from csv import reader
-from random import shuffle, choice, sample
+from random import shuffle, choice, choices, sample
 
 DATA_DIR = 'data/'
 TRAIN_DATA = DATA_DIR + 'train/'
@@ -7,6 +7,7 @@ TEST_DATA = DATA_DIR + 'test/'
 
 TRAIN_INFO = DATA_DIR + 'train_info.csv'
 SORTED_INFO = DATA_DIR + 'train_info_sorted.csv'
+PAIR_TRAIN_SET = DATA_DIR + 'pairwise_train_info.csv'
 
 MAX_ARTIST_PAIRS = 20
 
@@ -52,6 +53,7 @@ def create_pairs():
         data[artistID].append(filepath)
 
   artists = list(artists)
+  artist_weights = [len(data[ID]) for ID in data]
   print('%i differnt artists with %i total paintings' % (len(artists), m))
   pairs = []
   for artistID in artists:
@@ -60,18 +62,18 @@ def create_pairs():
 
     # collect num_pairs pairs of paintings from the same artist
     # tuples of form (path, path, y) with y=1 if same artist else y=0
-    cur_paintings = sample(data[artistID], num_paintings)
-    same_pairs = [(cur_paintings[i], cur_paintings[num_paintings-1-i], 1) for i in range(num_pairs)]
+    cur_paintings = data[artistID]
+    same_pairs = [(cur_paintings[i], cur_paintings[num_paintings-1-i], '1') for i in range(num_pairs)]
     pairs.extend(same_pairs)
 
     # collect 1 training example per painting with different artists
     diff_pairs = []
     for painting in data[artistID]:
-      rand_artist = choice(artists)
+      rand_artist = choices(artists, weights=artist_weights)[0]
       while rand_artist == artistID:
-        rand_artist = choice(artists)
+        rand_artist = choices(artists, weights=artist_weights)[0]
       rand_painting = choice(data[rand_artist])
-      diff_pairs.append((painting, rand_painting, 0))
+      diff_pairs.append((painting, rand_painting, '0'))
 
     pairs.extend(diff_pairs)
 
@@ -80,8 +82,12 @@ def create_pairs():
 def main():
   pairs = create_pairs()
   m = len(pairs)
-  pos = sum(pair[2] for pair in pairs)
+  pos = sum(int(pair[2]) for pair in pairs)
   print('%i training points with %i positive examples' % (m, pos))
+  with open(PAIR_TRAIN_SET, 'w+') as writer:
+    for pair in pairs:
+      writer.write(','.join(pair)+'\n')
 
 if __name__ == '__main__':
   main()
+  
