@@ -40,19 +40,17 @@ def get_train_data(scale_dataset=1.0):
 def create_pairs():
   m = 0
   data = dict()
-  artists = set()
   with open(SORTED_INFO, 'r') as csvfile:
     datafile = reader(csvfile, delimiter=',')
     for row in datafile:
       m += 1
       filepath, artistID = row
-      artists.add(artistID)
       if artistID not in data:
         data[artistID] = [filepath]
       else:
         data[artistID].append(filepath)
 
-  artists = list(artists)
+  artists = list(data)
   artist_weights = [len(data[ID]) for ID in data]
   print('%i differnt artists with %i total paintings' % (len(artists), m))
   pairs = []
@@ -62,8 +60,8 @@ def create_pairs():
 
     # collect num_pairs pairs of paintings from the same artist
     # tuples of form (path, path, y) with y=1 if same artist else y=0
-    cur_paintings = data[artistID]
-    same_pairs = [(cur_paintings[i], cur_paintings[num_paintings-1-i], '1') for i in range(num_pairs)]
+    painting_pairs = all_pairs(data[artistID])
+    same_pairs = [(pair[0], pair[1], '1') for pair in painting_pairs]
     pairs.extend(same_pairs)
 
     # collect 1 training example per painting with different artists
@@ -79,8 +77,15 @@ def create_pairs():
 
   return pairs
 
+def all_pairs(item_list):
+  pairs = []
+  for i in range(len(item_list)-1):
+    pairs.extend([(item_list[i], item) for item in item_list[i:]])
+  return pairs
+
 def main():
   pairs = create_pairs()
+  shuffle(pairs)
   m = len(pairs)
   pos = sum(int(pair[2]) for pair in pairs)
   print('%i training points with %i positive examples' % (m, pos))
