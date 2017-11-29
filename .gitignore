@@ -3,3 +3,4 @@ data/test/*
 data/zips
 data/__MACOSX
 data/*.csv
+.vscode
