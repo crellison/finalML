@@ -18,7 +18,9 @@ widths.sort()
 heights.sort()
 
 median_size = (widths[len(widths) // 2], heights[len(heights) // 2])
+
 print('Median image size: ', median_size)
+# OUTPUTS (800, 800)
 
 """
 width_histogram = numpy.histogram(widths)
