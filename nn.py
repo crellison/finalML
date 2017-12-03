@@ -8,16 +8,15 @@ from keras.layers import Conv3D, Dense, Concatenate, Input, MaxPooling2D, Flatte
 def create_model(image_a, image_b):
 
     # Build the network shared between both input images
-    shared_model = Sequential()
-    shared_model.add(Input(shape=image_a.shape))
-    shared_model.add(Conv3D(64, (9, 9), padding='same', activation='relu'))
-    shared_model.add(MaxPooling2D())
-    shared_model.add(Conv3D(128, (7, 7), padding='same', activation='relu'))
-    shared_model.add(MaxPooling2D())
-    shared_model.add(Conv3D(128, (3, 3), padding='same', activation='relu'))
-    shared_model.add(MaxPooling2D())
-    shared_model.add(Flatten())
-    shared_model.add(Dense(1024, activation='sigmoid'))
+    input_image = Input(shape=image_a.shape)
+    x = Conv3D(64, (9, 9), padding='same', activation='relu')(input_image)
+    x = MaxPooling2D()(x)
+    x = Conv3D(128, (7, 7), padding='same', activation='relu')(x)
+    x = MaxPooling2D()(x)
+    x = Conv3D(128, (7, 7), padding='same', activation='relu')(x)
+    x = MaxPooling2D()(x)
+    features = Dense(1024, activation='sigmoid')(x)
+    shared_model = Model(input_image, features)
 
     # Build the feature sets outputed by each network
     a_features = shared_model(image_a)
@@ -39,5 +38,7 @@ def create_model(image_a, image_b):
 
 
 def train_model(model, epochs, data_path):
+
+
 
     model.fit([image_a, image_b], labels, epochs=epochs)
