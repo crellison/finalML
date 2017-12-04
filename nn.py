@@ -1,9 +1,15 @@
 from wrangledata import get_train_data
+from PIL import Image
 
+from keras.backend import variable as MakeTensor
 from keras.models import Model, Sequential
 from keras.layers import Conv2D, Conv3D, Dense, Concatenate, Input, MaxPooling2D, Flatten
+from sys import argv
 
 # 60-64 kernel convolutions
+
+def image_to_tensor(path):
+    return MakeTensor(Image.open(path))
 
 def create_model(image_a, image_b):
 
@@ -99,3 +105,11 @@ model.fit_generator(
     """
 
     model.fit([image_a, image_b], labels, epochs=epochs)
+
+def main():
+    image_a = argv[1]
+    image_b = argv[2]
+    create_model(image_a, image_b)
+
+if __name__ == '__main__':
+    main()
