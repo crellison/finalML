@@ -14,3 +14,8 @@ data/*.csv
 .idea/inspectionProfiles/Project_Default.xml
 .idea/inspectionProfiles/Project_Default.xml
 .idea/inspectionProfiles/Project_Default.xml
+*.jpg
+.idea/other.xml
+data/oldsmall/train.tar
+data/train.tgz
+fdytg.py

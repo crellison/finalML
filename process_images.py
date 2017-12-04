@@ -1,35 +1,61 @@
 from PIL import Image
-from os import path, listdir
+import os
 from sys import argv
 
+
 def resize_image(image, width):
-  pass
+    return image.resize((width, width))
+
 
 def square_image(image):
-  pass
+    # TODO: Change to crop from the center
+    smallest_dimension = min(image.size)
+    return image.crop((0, 0, smallest_dimension, smallest_dimension))
+
 
 def save_image(image, path):
-  pass
+    with open(os.path.abspath(path), 'a+') as file:
+        image.save(file, "JPEG")
+
 
 def print_usage():
-  print('====== Usage ======')
-  print('python3 resize_images.py <directory> <scale>')
-  print()
-  print('directory <str> path of dir with images to process')
-  print('scale <int> new width of images')
+    print('====== Usage ======')
+    print('python3 resize_images.py <directory> <scale>')
+    print()
+    print('directory <str> path of dir with images to process')
+    print('scale <int> new width of images')
 
-def main(directory, scale):
-  for image_file in listdir(directory):
-    with Image.open(path.join(directory, image_file)) as image:
-      squared = square_image(image)
-      new_image = resize_image(squared)
-      save_path = 'placeholder'
-      save_image(new_image, save_path)
+
+def main(directory, width):
+    print(directory)
+    files = os.listdir(directory)
+    files.sort()
+    small_directory = os.listdir(os.path.join('data', 'small', 'train'))
+    print(files)
+    for image_file in files:
+        if image_file not in small_directory:
+            with Image.open(os.path.join(directory, image_file)) as image:
+                # image.show()
+                squared = square_image(image)
+                new_image = resize_image(squared, width)
+                save_path = os.path.join('data', 'small', 'train', image_file)
+                # new_image.show()
+                try:
+                    save_image(new_image, save_path)
+                except:
+                    print('uh oh error, image:', image_file)
+            print(image_file)
+
+
 
 if __name__ == '__main__':
-  if len(argv) < 4:
-    print_usage()
-  else:
-    directory = path.join(argv[2])
-    scale = int(argv[3])
-    main(directory, scale)
+
+    main(os.path.join('data', 'train'), 100)
+    """
+    if len(argv) < 4:
+        print_usage()
+    else:
+        directory = path.join(argv[2])
+        scale = int(argv[3])
+        main(directory, scale)
+    """
