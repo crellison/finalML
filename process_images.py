@@ -14,7 +14,7 @@ def square_image(image):
 
 
 def save_image(image, path):
-    with open(os.path.abspath(path), 'a+') as file:
+    with open(os.path.abspath(path), 'w+') as file:
         image.save(file, "JPEG")
 
 
@@ -32,8 +32,13 @@ def main(directory, width):
     files.sort()
     small_directory = os.listdir(os.path.join('data', 'small', 'train'))
     print(files)
+
+    if '54305.jpg' in small_directory:
+        print('YES IT IS THERE')
+
     for image_file in files:
         if image_file not in small_directory:
+            #print('file name:', image_file)
             with Image.open(os.path.join(directory, image_file)) as image:
                 # image.show()
                 squared = square_image(image)
@@ -50,7 +55,7 @@ def main(directory, width):
 
 if __name__ == '__main__':
 
-    main(os.path.join('data', 'train'), 100)
+    main(os.path.join('data', 'train'), 600)
     """
     if len(argv) < 4:
         print_usage()
