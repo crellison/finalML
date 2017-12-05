@@ -79,10 +79,12 @@ def train_model(model, epochs, data_path, pairs_csv):
         batch_b = np.zeros((batch_size, 100, 100, 3))
         batch_y = np.zeros(batch_size)
         for j in range(batch_size):
-            batch_a[j] = get_image(pairs[i * batch_size + j][0])
+            try:
+                batch_a[j] = get_image(pairs[i * batch_size + j][0])
 
-            batch_b[j] = get_image(pairs[i * batch_size + j][1])
-
+                batch_b[j] = get_image(pairs[i * batch_size + j][1])
+            except:
+                print('tgfrgtfgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg')
             batch_y[j] = pairs[i * batch_size + j][2]
 
         model.train_on_batch([batch_a, batch_b], batch_y)
@@ -105,18 +107,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
