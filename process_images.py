@@ -34,6 +34,7 @@ def main(directory, width):
     print(files)
     for image_file in files:
         if image_file not in small_directory:
+            print('file name:', image_file)
             with Image.open(os.path.join(directory, image_file)) as image:
                 # image.show()
                 squared = square_image(image)
