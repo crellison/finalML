@@ -38,7 +38,7 @@ def main(directory, width):
 
     for image_file in files:
         if image_file not in small_directory:
-            print('file name:', image_file)
+            #print('file name:', image_file)
             with Image.open(os.path.join(directory, image_file)) as image:
                 # image.show()
                 squared = square_image(image)
@@ -55,7 +55,7 @@ def main(directory, width):
 
 if __name__ == '__main__':
 
-    main(os.path.join('data', 'train'), 100)
+    main(os.path.join('data', 'train'), 600)
     """
     if len(argv) < 4:
         print_usage()
