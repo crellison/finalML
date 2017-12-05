@@ -63,6 +63,8 @@ def train_model(model, epochs, data_path, pairs_csv):
     # Create two inputs, each 4D tensors or batches of images
     # Also create a numpy array of y values for these pairs of images
 
+
+
     # (file a, file b, label)
     pairs = []
 
@@ -73,28 +75,58 @@ def train_model(model, epochs, data_path, pairs_csv):
 
     batch_size = 32
 
-    for i in range(100):
+    train_split = int(len(pairs) * 0.6)
+
+    pairs_train = pairs[:train_split]
+    pairs_cv = pairs[train_split:int(len(pairs) * 0.8)]
+
+    firstweights = str(model.get_weights())
+    for i in range(10000):
         print('batch:', i)
+        # TODO: remeber to handle when loading fails... currently filling with 0s... not ideal
+        # perhaps this means not training on pairs with them...
         batch_a = np.zeros((batch_size, 100, 100, 3))
         batch_b = np.zeros((batch_size, 100, 100, 3))
         batch_y = np.zeros(batch_size)
         for j in range(batch_size):
             try:
-                batch_a[j] = get_image(pairs[i * batch_size + j][0])
+                batch_a[j] = get_image(pairs_train[i * batch_size + j][0])
 
-                batch_b[j] = get_image(pairs[i * batch_size + j][1])
+                batch_b[j] = get_image(pairs_train[i * batch_size + j][1])
             except:
                 print('tgfrgtfgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg')
-            batch_y[j] = pairs[i * batch_size + j][2]
+            batch_y[j] = pairs_train[i * batch_size + j][2]
 
         model.train_on_batch([batch_a, batch_b], batch_y)
+    print(str(model.get_weights()) == firstweights)
 
+    # test image batches
+    for i in range(10):
+        print('batch:', i)
+        # TODO: remeber to handle when loading fails... currently filling with 0s... not ideal
+        # perhaps this means not training on pairs with them...
+        test_batch_a = np.zeros((batch_size, 100, 100, 3))
+        test_batch_b = np.zeros((batch_size, 100, 100, 3))
+        test_batch_y = np.zeros(batch_size)
+        for j in range(batch_size):
+            try:
+                test_batch_a[j] = get_image(pairs[i * batch_size + j][0])
+
+                test_batch_b[j] = get_image(pairs[i * batch_size + j][1])
+            except:
+                print('tgfrgtfgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg')
+            test_batch_y[j] = pairs[i * batch_size + j][2]
+
+
+        print('loss:', model.test_on_batch([test_batch_a, test_batch_b], test_batch_y))
+        print(model.predict_on_batch([test_batch_a, test_batch_b]))
+        print(test_batch_y)
 
 def get_image(path):
     with Image.open(path) as image:
         image = np.array(image) / 255
-        print('image file a:', path)
-        print('single image shape a:', image.shape)
+        #print('image file a:', path)
+        #print('single image shape a:', image.shape)
         if len(image.shape) == 2:
             image = np.dstack((image, image, image))
 
@@ -102,6 +134,7 @@ def get_image(path):
 
 
 def main():
+    # TODO: don't make these sizes "magic numbers..." these are not random...
     model = create_model((100, 100, 3))
     train_model(model, 123, 23452, os.path.join('data', 'pairwise_train_info.csv'))
 
