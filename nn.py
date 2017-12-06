@@ -177,6 +177,7 @@ def contrastive_loss(y_true, y_pred):
 def main():
     # TODO: Get size from image
     model = create_model((IMAGE_WIDTH, IMAGE_WIDTH, 3))
+    print(model.summary())
     train_model(model, (IMAGE_WIDTH, IMAGE_WIDTH, 3), 500, 'placeholder', os.path.join('data', 'pairwise_train_info.csv'))
 
 if __name__ == '__main__':
