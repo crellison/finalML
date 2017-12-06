@@ -50,9 +50,9 @@ def siameseCNN(withGPU=False):
   features_a = sub_net(input_a)
   features_b = sub_net(input_b)
 
-  merged_features = concatenate([features_a, features_b], axis=1)
+  merged_features = concatenate([features_a, features_b], axis=-1)
 
-  distance = Lambda(euclidean_distance, output_shape=(2,))([features_a, features_b])
+  distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([features_a, features_b])
 
   model = Model(inputs=[input_a, input_b], outputs=distance)
 
@@ -147,8 +147,8 @@ def trainSiamese():
   train_labels, train_pairs = create_pairs(x_train_hash)
   test_labels, test_pairs = create_pairs(x_test_hash)
 
-  train_labels = to_categorical(train_labels)
-  test_labels = to_categorical(test_labels)
+  # train_labels = to_categorical(train_labels)
+  # test_labels = to_categorical(test_labels)
 
   x_train_a, x_train_b = make_data_from_pairs(train_pairs, x_train)
 
