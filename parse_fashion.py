@@ -1,6 +1,7 @@
 from keras.datasets import fashion_mnist
 from keras.models import Sequential
-from keras.layers import Conv2D, Dense, concatenate, Input, MaxPooling2D, Flatten
+from keras.layers import Conv2D, Dense, concatenate, Input, MaxPooling2D, Flatten, Dropout
+from keras.layers.advanced_activations import LeakyReLU, PReLU
 from keras.utils import to_categorical
 
 from random import sample, randint, choice
@@ -25,6 +26,7 @@ def create_pairs(label_map):
       a,b = sample(label_map[label], 2)
 
       other_label = randint(0,9)
+
       if other_label == label:
         other_label = (other_label + 1) % 10
 
@@ -39,15 +41,19 @@ def create_pairs(label_map):
 def fashion_network():
   # input 28x28
   model = Sequential()
-  model.add(Conv2D(32, (5,5), activation='relu', input_shape=MNIST_SHAPE)) # 24 x 24
-  model.add(MaxPooling2D()) # 12 x 12
-  model.add(Conv2D(64, (3,3), activation='relu')) # 10 x 10
-  model.add(MaxPooling2D()) # 5 x 5
-  model.add(Conv2D(128, (3,3), activation='relu')) # 3 x 3
+  model.add(Conv2D(32, (5, 5), padding='same', activation='relu', input_shape=MNIST_SHAPE))
+  model.add(Dropout(0.1))
+  model.add(Conv2D(64, (5, 5), padding='same', activation='relu'))
+  model.add(Dropout(0.1))
+  model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+  model.add(MaxPooling2D())
+  model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
+  model.add(MaxPooling2D())
+  model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
   model.add(Flatten())
   model.add(Dense(256, activation='relu'))
   model.add(Dense(10, activation='sigmoid'))
-  model.compile(optimizer='rmsprop',
+  model.compile(optimizer='sgd',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
   return model
@@ -62,8 +68,12 @@ def main():
   x_train = np.array(x_train)
   x_test = np.array(x_test)
 
-  y_train = to_categorical(y_train)
-  y_test = to_categorical(y_test)
+  y_train = to_categorical(y_train, num_classes=10)
+  y_test = to_categorical(y_test, num_classes=10)
+
+  # y_train = np.array(y_train).astype('float32')
+  # y_test = np.array(y_test).astype('float32')
+
 
   img_rows, img_cols = 28, 28
   x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
@@ -79,7 +89,7 @@ def main():
   model = fashion_network()
   print(model.summary())
   model.fit(x_train, y_train, verbose=1,
-            epochs=3, batch_size=32,
+            epochs=10, batch_size=32,
             validation_data=(x_test, y_test))
 
   score = model.evaluate(x_test, y_test, batch_size=128)
