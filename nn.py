@@ -1,7 +1,6 @@
 from wrangledata import get_train_data
 from PIL import Image
-from process_images import square_image
-
+import process_images
 from keras.backend import variable as MakeTensor
 from keras.models import Model, Sequential
 from keras.layers import Conv2D, Conv3D, Dense, concatenate, Input, MaxPooling2D, Flatten
@@ -9,6 +8,8 @@ from sys import argv
 import csv
 import numpy as np
 import os
+
+IMAGE_WIDTH = 200
 
 # 60-64 kernel convolutions
 IMAGE_DIR = 'data/train/'
@@ -42,6 +43,7 @@ def create_model(input_shape):
     model = Model(inputs=[input_a, input_b], outputs=predictions)
 
     # Compile the model. It should be ready to train
+    print('compiling model')
     model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
 
     return model
@@ -68,7 +70,7 @@ def create_sub_network(input_shape):
 def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
     # Create two inputs, each 4D tensors or batches of images
     # Also create a numpy array of y values for these pairs of images
-
+    batch_size = 16
     pairs = []
     with open(pairs_csv) as f:
         reader = csv.reader(f)
@@ -83,8 +85,10 @@ def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
     firstweights = str(model.get_weights())
 
     for i in range(n_train_batches):
+        print('batch', i)
+        train_batch_a, train_batch_b, train_batch_y = get_batch(train_pairs, i, batch_size, image_size)
+        #print('train batch a', train_batch_a.shape)
 
-        train_batch_a, train_batch_b, train_batch_y = get_batch(train_pairs, i, BATCH_SIZE, image_size)
 
         model.train_on_batch([train_batch_a, train_batch_b], train_batch_y)
 
@@ -100,30 +104,34 @@ def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
 
 
 def get_batch(pairs, batch_id, batch_size, image_size):
-    batch_a = np.zeros((batch_size, image_size[0], image_size[1], image_size[2]))
-    batch_b = np.zeros((batch_size, image_size[0], image_size[1], image_size[2]))
-    batch_y = np.zeros(batch_size)
-    print('getting batch:', batch_id)
+    batch_a = np.zeros((batch_size, image_size[0], image_size[1], image_size[2]), dtype="float32")
+    batch_b = np.zeros((batch_size, image_size[0], image_size[1], image_size[2]), dtype="float32")
+    batch_y = np.zeros(batch_size, dtype="float32")
+
+    # bad_images = 0
     for j in range(batch_size):
+        batch_a[j] = get_image(pairs[batch_id * batch_size + j][0])
+        batch_b[j] = get_image(pairs[batch_id * batch_size + j][1])
+
         # TODO: Try the next image when the loading fails
         try:
-            path1, path2, y = pairs[batch_id * batch_size + j]
-            path1 = os.join.path(IMAGE_DIR, path1)
-            path2 = os.join.path(IMAGE_DIR, path2)
-
-            batch_a[j] = get_image(path1)
-            batch_b[j] = get_image(path2)
+            batch_b[j] = get_image(pairs[batch_id * batch_size + j][1])
+            batch_a[j] = get_image(pairs[batch_id * batch_size + j][0])
         except:
             # TODO: Change this to a real exception
+            bad_images += 1
             print('FAILED TO GET IMAGE INTO BATCH', batch_id, ', Image #', j)
+            #print('bad images', bad_images)
         batch_y[j] = pairs[batch_id * batch_size + j][2]
-    
+
+
+
     return batch_a, batch_b, batch_y
 
 def get_image(path):
     with Image.open(path) as image:
-        print(image)
-        image = square_image(image)
+        image = process_images.square_image(image)
+        image = image.resize((IMAGE_WIDTH,IMAGE_WIDTH))
         image = np.array(image) / 255
         #print('image file a:', path)
         #print('single image shape a:', image.shape)
@@ -134,10 +142,16 @@ def get_image(path):
 
 
 def main():
-    # TODO: Get size from images
-    model = create_model(IMAGE_SHAPE)
-    train_model(model, IMAGE_SHAPE, 1000, 'placeholder', os.path.join('data', 'pairwise_train_info.csv'))
+    # TODO: Get size from image
+    model = create_model((IMAGE_WIDTH, IMAGE_WIDTH, 3))
+    train_model(model, (IMAGE_WIDTH, IMAGE_WIDTH, 3), 500, 'placeholder', os.path.join('data', 'pairwise_train_info.csv'))
 
 if __name__ == '__main__':
     main()
-    
+
+
+
+
+
+
+# %USERPROFILE%/.keras/keras.json
