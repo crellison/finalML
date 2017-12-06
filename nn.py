@@ -109,7 +109,10 @@ def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
         all_y = np.vstack((all_y, test_batch_y.reshape(batch_size, 1)))
 
 
-    print(np.hstack((all_predictions, all_y)))
+    length = len(all_predictions)
+    accuracy = sum(all_predictions[i] == all_y[i] for i in range(length))
+    print('accuracy: ', accuracy/length)
+    # print(np.hstack((all_predictions, all_y)))
 
 
 def get_batch(pairs, batch_id, batch_size, image_size):
