@@ -11,7 +11,14 @@ import numpy as np
 
 from nn import euclidean_distance, eucl_dist_output_shape, contrastive_loss
 
+from PIL import Image as pImage
+
 MNIST_SHAPE = (28, 28, 1)
+
+def show_img(img):
+  img_ = img * 255
+  img_ = pImage.fromarray(img_, mode='L')
+  img_.show(command='fim')
 
 def make_hash(y_data):
   label_map = {x:list() for x in range(10)}
@@ -111,7 +118,7 @@ def make_data_from_pairs(pairs, data):
   for item in pairs:
     x_train_a.append(data[item[0]])
     x_train_b.append(data[item[1]])
-
+  
   x_train_a = np.array(x_train_a).astype('float32')
   x_train_b = np.array(x_train_b).astype('float32')
 
