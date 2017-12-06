@@ -5,6 +5,7 @@ from keras.backend import variable as MakeTensor
 from keras.models import Model, Sequential
 from keras.layers import Conv2D, Lambda, Dense, concatenate, Input, MaxPooling2D, Flatten
 from keras import backend as K
+from keras.models import model_from_json
 from sys import argv
 import csv
 import numpy as np
@@ -18,6 +19,7 @@ IMAGE_DIM = 256
 IMAGE_SHAPE = (256, 256, 3)
 
 BATCH_SIZE = 32
+OUTPUT_FILE = 'painting_weights.h5'
 
 def image_to_tensor(path):
     return MakeTensor(Image.open(path))
@@ -98,6 +100,8 @@ def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
 
         model.train_on_batch([train_batch_a, train_batch_b], train_batch_y)
 
+
+    model.save_weights(OUTPUT_FILE)
     print(str(model.get_weights()) == firstweights)
 
     # Test image batches
