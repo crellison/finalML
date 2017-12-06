@@ -19,3 +19,4 @@ data/*.csv
 data/oldsmall/train.tar
 data/train.tgz
 fdytg.py
+__pycache__
