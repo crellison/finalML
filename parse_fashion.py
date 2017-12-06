@@ -38,6 +38,30 @@ def create_pairs(label_map):
 
   return labels, pairs
 
+def small_fashion_network():
+  '''
+  smaller CNN model for use w/o GPU
+  '''
+  model = Sequential()
+  # input 28x28
+  model.add(Conv2D(16, (5, 5), padding='same', activation='relu', input_shape=MNIST_SHAPE))
+  model.add(MaxPooling2D())
+  # input 14 x 14
+  model.add(Conv2D(16, (5, 5), padding='same', activation='relu'))
+  model.add(MaxPooling2D())
+  # input 7 x 7
+  model.add(Conv2D(32, (3, 3), activation='relu'))
+  # input 5 x 5
+  model.add(Flatten())
+  # input 800
+  model.add(Dense(64, activation='relu'))
+
+  model.add(Dense(10, activation='sigmoid'))
+  model.compile(optimizer='sgd',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+  return model
+
 def fashion_network():
   # input 28x28
   model = Sequential()
@@ -74,7 +98,7 @@ def main():
   # y_train = np.array(y_train).astype('float32')
   # y_test = np.array(y_test).astype('float32')
 
-
+  print(x_train.shape)
   img_rows, img_cols = 28, 28
   x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
   x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
@@ -86,7 +110,8 @@ def main():
   x_test /= 255
 
   # x is image, y is label
-  model = fashion_network()
+  # model = fashion_network()
+  model = small_fashion_network()
   print(model.summary())
   model.fit(x_train, y_train, verbose=1,
             epochs=10, batch_size=32,
