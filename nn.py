@@ -3,13 +3,15 @@ from PIL import Image
 import process_images
 from keras.backend import variable as MakeTensor
 from keras.models import Model, Sequential
-from keras.layers import Conv2D, Conv3D, Dense, concatenate, Input, MaxPooling2D, Flatten
+from keras.layers import Conv2D, Lambda, Dense, concatenate, Input, MaxPooling2D, Flatten
+from keras import backend as K
+from keras.models import model_from_json
 from sys import argv
 import csv
 import numpy as np
 import os
 
-IMAGE_WIDTH = 200
+IMAGE_WIDTH = 100
 
 # 60-64 kernel convolutions
 IMAGE_DIR = 'data/train/'
@@ -17,6 +19,7 @@ IMAGE_DIM = 256
 IMAGE_SHAPE = (256, 256, 3)
 
 BATCH_SIZE = 32
+OUTPUT_FILE = 'painting_weights.h5'
 
 def image_to_tensor(path):
     return MakeTensor(Image.open(path))
@@ -37,14 +40,19 @@ def create_model(input_shape):
 
     # Logistic regression in place of a distance function.
     # Run logistic regression on the image's outputed features
-    predictions = Dense(1, activation='sigmoid')(merged_features)
+
+    distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([features_a, features_b])
+
+    # Original approach: using logistic regression for the output:
+    # predictions = Dense(1, activation='sigmoid')(merged_features)
 
     # Make the model from the inputs and flow of the output
-    model = Model(inputs=[input_a, input_b], outputs=predictions)
+    model = Model(inputs=[input_a, input_b], outputs=distance)
 
     # Compile the model. It should be ready to train
     print('compiling model')
-    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
+
+    model.compile(optimizer='rmsprop', loss=contrastive_loss, metrics=['accuracy']) #'binary_crossentropy'
 
     return model
 
@@ -58,7 +66,7 @@ def create_sub_network(input_shape):
     model.add(MaxPooling2D())
     model.add(Conv2D(64, (5, 5), padding='same', activation='relu'))
     model.add(MaxPooling2D())
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+    # model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
     model.add(Flatten())
     model.add(Dense(1024, activation='relu'))
     model.add(Dense(1024, activation='relu'))
@@ -92,15 +100,29 @@ def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
 
         model.train_on_batch([train_batch_a, train_batch_b], train_batch_y)
 
+
+    model.save_weights(OUTPUT_FILE)
     print(str(model.get_weights()) == firstweights)
 
     # Test image batches
-    for i in range(10):
-        test_batch_a, test_batch_b, test_batch_y = get_batch(test_pairs, i, BATCH_SIZE, image_size)
+    all_predictions = np.ndarray((1, 1))
+    all_y = np.ndarray((1, 1))
 
-        print('loss:', model.test_on_batch([test_batch_a, test_batch_b], test_batch_y))
-        print(model.predict_on_batch([test_batch_a, test_batch_b]))
-        print(test_batch_y)
+    for i in range(10):
+
+        test_batch_a, test_batch_b, test_batch_y = get_batch(test_pairs, i, batch_size, image_size)
+        print('test_batch_a', test_batch_a)
+        predictions_batch = model.predict_on_batch([test_batch_a, test_batch_b])
+        print('predictions batch', predictions_batch)
+
+        all_predictions = np.vstack((all_predictions, np.round(predictions_batch)))
+        all_y = np.vstack((all_y, test_batch_y.reshape(batch_size, 1)))
+
+
+    length = len(all_predictions)
+    accuracy = sum(all_predictions[i] == all_y[i] for i in range(length))
+    print('accuracy: ', accuracy/length)
+    # print(np.hstack((all_predictions, all_y)))
 
 
 def get_batch(pairs, batch_id, batch_size, image_size):
@@ -119,7 +141,7 @@ def get_batch(pairs, batch_id, batch_size, image_size):
             batch_a[j] = get_image(pairs[batch_id * batch_size + j][0])
         except:
             # TODO: Change this to a real exception
-            bad_images += 1
+            # bad_images += 1
             print('FAILED TO GET IMAGE INTO BATCH', batch_id, ', Image #', j)
             #print('bad images', bad_images)
         batch_y[j] = pairs[batch_id * batch_size + j][2]
@@ -140,10 +162,22 @@ def get_image(path):
 
         return image.astype('float32')
 
+def eucl_dist_output_shape(shapes):
+    shape1, shape2 = shapes
+    return shape1[0], 1
+
+def euclidean_distance(vects):
+    x, y = vects
+    return K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True))
+
+def contrastive_loss(y_true, y_pred):
+    margin = 1
+    return K.mean(y_true * K.square(y_pred) + (1 - y_true) * K.square(K.maximum(margin - y_pred, 0)))
 
 def main():
     # TODO: Get size from image
     model = create_model((IMAGE_WIDTH, IMAGE_WIDTH, 3))
+    print(model.summary())
     train_model(model, (IMAGE_WIDTH, IMAGE_WIDTH, 3), 500, 'placeholder', os.path.join('data', 'pairwise_train_info.csv'))
 
 if __name__ == '__main__':

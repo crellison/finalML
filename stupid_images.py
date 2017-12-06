@@ -143,7 +143,10 @@ bad_images = ["54305.jpg",
               "73932.jpg",
               "76741.jpg",
               "77094.jpg",
-              "77740.jpg"]
+              "77740.jpg"
+
+
+              ]
 
 for image_file in bad_images:
     os.replace(os.path.abspath(os.path.join('data', 'oldsmall', 'train', image_file)), os.path.abspath(os.path.join('data', 'train', image_file)))
