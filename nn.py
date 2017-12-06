@@ -1,6 +1,6 @@
 from wrangledata import get_train_data
 from PIL import Image
-
+import process_images
 from keras.backend import variable as MakeTensor
 from keras.models import Model, Sequential
 from keras.layers import Conv2D, Conv3D, Dense, concatenate, Input, MaxPooling2D, Flatten
@@ -9,7 +9,7 @@ import csv
 import numpy as np
 import os
 
-IMAGE_WIDTH = 600
+IMAGE_WIDTH = 200
 
 # 60-64 kernel convolutions
 
@@ -49,13 +49,13 @@ def create_sub_network(input_shape):
     model = Sequential()
     model.add(Conv2D(32, (9, 9), padding='same', activation='relu', input_shape=input_shape))
     model.add(MaxPooling2D())
-    #model.add(Conv2D(64, (7, 7), padding='same', activation='relu'))
+    model.add(Conv2D(64, (7, 7), padding='same', activation='relu'))
     model.add(MaxPooling2D())
-    #model.add(Conv2D(64, (5, 5), padding='same', activation='relu'))
+    model.add(Conv2D(64, (5, 5), padding='same', activation='relu'))
     model.add(MaxPooling2D())
-    #model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
     model.add(Flatten())
-    #model.add(Dense(1024, activation='relu'))
+    model.add(Dense(1024, activation='relu'))
     model.add(Dense(1024, activation='relu'))
 
     return model
@@ -65,14 +65,12 @@ def create_sub_network(input_shape):
 def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
     # Create two inputs, each 4D tensors or batches of images
     # Also create a numpy array of y values for these pairs of images
-
+    batch_size = 16
     pairs = []
     with open(pairs_csv) as f:
         reader = csv.reader(f)
         # next(reader, None)  # Skipping the header
         pairs = [tuple(line) for line in reader]
-
-    batch_size = 1
 
     train_split = int(len(pairs) * 0.6)
 
@@ -84,10 +82,10 @@ def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
     for i in range(n_train_batches):
         print('batch', i)
         train_batch_a, train_batch_b, train_batch_y = get_batch(train_pairs, i, batch_size, image_size)
-        print('train batch a', train_batch_a.shape)
+        #print('train batch a', train_batch_a.shape)
 
 
-        model.fit([train_batch_a, train_batch_b], train_batch_y)
+        model.train_on_batch([train_batch_a, train_batch_b], train_batch_y)
 
     print(str(model.get_weights()) == firstweights)
 
@@ -104,25 +102,30 @@ def get_batch(pairs, batch_id, batch_size, image_size):
     batch_a = np.zeros((batch_size, image_size[0], image_size[1], image_size[2]), dtype="float32")
     batch_b = np.zeros((batch_size, image_size[0], image_size[1], image_size[2]), dtype="float32")
     batch_y = np.zeros(batch_size, dtype="float32")
+
+    # bad_images = 0
     for j in range(batch_size):
-        print(get_image(pairs[batch_id * batch_size + j][0]).shape)
         batch_a[j] = get_image(pairs[batch_id * batch_size + j][0])
         batch_b[j] = get_image(pairs[batch_id * batch_size + j][1])
 
         # TODO: Try the next image when the loading fails
-        # try:
-        #     batch_a[j] = get_image(pairs[batch_id * batch_size + j][0])
-        #     batch_b[j] = get_image(pairs[batch_id * batch_size + j][1])
-        # except:
-        #     # TODO: Change this to a real exception
-        #     print('FAILED TO GET IMAGE INTO BATCH', batch_id, ', Image #', j)
+        try:
+            batch_b[j] = get_image(pairs[batch_id * batch_size + j][1])
+            batch_a[j] = get_image(pairs[batch_id * batch_size + j][0])
+        except:
+            # TODO: Change this to a real exception
+            bad_images += 1
+            print('FAILED TO GET IMAGE INTO BATCH', batch_id, ', Image #', j)
+            #print('bad images', bad_images)
         batch_y[j] = pairs[batch_id * batch_size + j][2]
+
 
 
     return batch_a, batch_b, batch_y
 
 def get_image(path):
     with Image.open(path) as image:
+        image = process_images.square_image(image)
         image = image.resize((IMAGE_WIDTH,IMAGE_WIDTH))
         image = np.array(image) / 255
         #print('image file a:', path)
@@ -134,9 +137,9 @@ def get_image(path):
 
 
 def main():
-    # TODO: Get size from images
+    # TODO: Get size from image
     model = create_model((IMAGE_WIDTH, IMAGE_WIDTH, 3))
-    train_model(model, (IMAGE_WIDTH, IMAGE_WIDTH, 3), 10, 'placeholder', os.path.join('data', 'pairwise_train_info.csv'))
+    train_model(model, (IMAGE_WIDTH, IMAGE_WIDTH, 3), 500, 'placeholder', os.path.join('data', 'pairwise_train_info.csv'))
 
 if __name__ == '__main__':
     main()
