@@ -4,6 +4,8 @@ from keras.layers import Conv2D, Dense, concatenate, Input, MaxPooling2D, Flatte
 from keras.layers.advanced_activations import LeakyReLU, PReLU
 from keras.utils import to_categorical
 
+from math import floor
+from time import time
 from random import sample, randint, choice
 import numpy as np
 
@@ -48,13 +50,13 @@ def siameseCNN(withGPU=False):
   features_a = sub_net(input_a)
   features_b = sub_net(input_b)
 
-  merged_features = concatenate([features_a, features_b], axis=-1)
+  merged_features = concatenate([features_a, features_b], axis=1)
 
-  distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([features_a, features_b])
+  distance = Lambda(euclidean_distance, output_shape=(2,))([features_a, features_b])
 
   model = Model(inputs=[input_a, input_b], outputs=distance)
 
-  model.compile(optimizer='rmsprop', loss=contrastive_loss, metrics=['accuracy']) #'binary_crossentropy'
+  model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy']) #'binary_crossentropy'
 
   return model
 
@@ -126,6 +128,10 @@ def make_data_from_pairs(pairs, data):
   print(x_train_a.shape)
   return x_train_a, x_train_b
 
+def outfile():
+  signature = floor(time())
+  return 'fashion_model_%i.h5' % signature
+
 def trainSiamese():
   model = siameseCNN()
   print(model.summary())
@@ -150,7 +156,12 @@ def trainSiamese():
             verbose=1,
             epochs=10, batch_size=32,
             validation_split=0.2)
-  return  
+
+  x_test_a, x_test_b = make_data_from_pairs(test_pairs, x_test)
+  score = model.evaluate([x_test_a, x_test_b], test_labels, batch_size=256)
+  print('loss: %f \t accuracy: %f' % tuple(score))
+
+  model.save_weights(outfile())
 
 def trainCNN():
   (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
@@ -187,6 +198,7 @@ def trainCNN():
   print('loss: %f \t accuracy: %f' % tuple(score))
 
 def main():
+  # trainCNN()
   trainSiamese()
 
 if __name__ == '__main__':
