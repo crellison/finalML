@@ -13,6 +13,11 @@ import os
 IMAGE_WIDTH = 100
 
 # 60-64 kernel convolutions
+IMAGE_DIR = 'data/train/'
+IMAGE_DIM = 256
+IMAGE_SHAPE = (256, 256, 3)
+
+BATCH_SIZE = 32
 
 def image_to_tensor(path):
     return MakeTensor(Image.open(path))
@@ -51,7 +56,7 @@ def create_model(input_shape):
 
 
 def create_sub_network(input_shape):
-
+    print('creating subnetwork...')
     model = Sequential()
     model.add(Conv2D(32, (9, 9), padding='same', activation='relu', input_shape=input_shape))
     model.add(MaxPooling2D())
@@ -63,7 +68,7 @@ def create_sub_network(input_shape):
     model.add(Flatten())
     model.add(Dense(1024, activation='relu'))
     model.add(Dense(1024, activation='relu'))
-
+    print('subnetwork created')
     return model
 
 
@@ -100,6 +105,7 @@ def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
     all_y = np.ndarray((1, 1))
 
     for i in range(10):
+
         test_batch_a, test_batch_b, test_batch_y = get_batch(test_pairs, i, batch_size, image_size)
         print('test_batch_a', test_batch_a)
         predictions_batch = model.predict_on_batch([test_batch_a, test_batch_b])
