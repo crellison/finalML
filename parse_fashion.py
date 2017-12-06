@@ -1,12 +1,13 @@
 from keras.datasets import fashion_mnist
-from keras.models import Sequential
-from keras.layers import Conv2D, Dense, concatenate, Input, MaxPooling2D, Flatten, Dropout
+from keras.models import Sequential, Model
+from keras.layers import Conv2D, Dense, concatenate, Input, MaxPooling2D, Flatten, Dropout, Lambda
 from keras.layers.advanced_activations import LeakyReLU, PReLU
 from keras.utils import to_categorical
 
 from random import sample, randint, choice
 import numpy as np
 
+from nn import euclidean_distance, eucl_dist_output_shape, contrastive_loss
 
 MNIST_SHAPE = (28, 28, 1)
 
@@ -37,6 +38,25 @@ def create_pairs(label_map):
       labels.extend([1,0])
 
   return labels, pairs
+
+def siameseCNN(withGPU=False):
+  sub_net = fashion_network() if withGPU else small_fashion_network()
+
+  input_a = Input(MNIST_SHAPE)
+  input_b = Input(MNIST_SHAPE)
+
+  features_a = sub_net(input_a)
+  features_b = sub_net(input_b)
+
+  merged_features = concatenate([features_a, features_b], axis=-1)
+
+  distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([features_a, features_b])
+
+  model = Model(inputs=[input_a, input_b], outputs=distance)
+
+  model.compile(optimizer='rmsprop', loss=contrastive_loss, metrics=['accuracy']) #'binary_crossentropy'
+
+  return model
 
 def small_fashion_network():
   '''
@@ -82,13 +102,59 @@ def fashion_network():
               metrics=['accuracy'])
   return model
 
-# def instantiate_network():
-#   model = fashion_network()
+def make_data_from_pairs(pairs, data):
+  x_train_a = []
+  x_train_b = []
 
-def main():
+  for item in pairs:
+    x_train_a.append(data[item[0]])
+    x_train_b.append(data[item[1]])
+
+  x_train_a = np.array(x_train_a).astype('float32')
+  x_train_b = np.array(x_train_b).astype('float32')
+
+  rows, cols, depth = MNIST_SHAPE
+  x_train_a = x_train_a.reshape(x_train_a.shape[0], rows, cols, depth)
+  x_train_b = x_train_b.reshape(x_train_b.shape[0], rows, cols, depth)
+
+  x_train_a = x_train_a.astype('float32')
+  x_train_b = x_train_b.astype('float32')
+
+  x_train_a /= 255
+  x_train_b /= 255
+
+  print(x_train_a.shape)
+  return x_train_a, x_train_b
+
+def trainSiamese():
+  model = siameseCNN()
+  print(model.summary())
+ 
   (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
-  # x_hash = make_hash(y_train)
-  # labels, pairs = create_pairs(x_hash)
+
+  x_train = np.array(x_train)
+  x_test = np.array(x_test)
+
+  x_train_hash = make_hash(y_train)
+  x_test_hash = make_hash(y_test)
+
+  train_labels, train_pairs = create_pairs(x_train_hash)
+  test_labels, test_pairs = create_pairs(x_test_hash)
+
+  train_labels = to_categorical(train_labels)
+  test_labels = to_categorical(test_labels)
+
+  x_train_a, x_train_b = make_data_from_pairs(train_pairs, x_train)
+
+  model.fit([x_train_a, x_train_b], train_labels,
+            verbose=1,
+            epochs=10, batch_size=32,
+            validation_split=0.2)
+  return  
+
+def trainCNN():
+  (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
+
   x_train = np.array(x_train)
   x_test = np.array(x_test)
 
@@ -98,7 +164,6 @@ def main():
   # y_train = np.array(y_train).astype('float32')
   # y_test = np.array(y_test).astype('float32')
 
-  print(x_train.shape)
   img_rows, img_cols = 28, 28
   x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
   x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
@@ -115,10 +180,14 @@ def main():
   print(model.summary())
   model.fit(x_train, y_train, verbose=1,
             epochs=10, batch_size=32,
-            validation_data=(x_test, y_test))
+            validation_split=0.2)
+            # validation_data=(x_test, y_test))
 
   score = model.evaluate(x_test, y_test, batch_size=128)
   print('loss: %f \t accuracy: %f' % tuple(score))
+
+def main():
+  trainSiamese()
 
 if __name__ == '__main__':
   main()
