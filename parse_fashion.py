@@ -79,7 +79,7 @@ def main():
   model = fashion_network()
   print(model.summary())
   model.fit(x_train, y_train, verbose=1,
-            epochs=6, batch_size=32,
+            epochs=3, batch_size=32,
             validation_data=(x_test, y_test))
 
   score = model.evaluate(x_test, y_test, batch_size=128)
