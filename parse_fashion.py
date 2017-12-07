@@ -5,9 +5,6 @@ from keras.layers.advanced_activations import LeakyReLU, PReLU
 from keras.utils import to_categorical
 from keras.optimizers import RMSprop
 
-
-from sklearn.metrics import accuracy_score, confusion_matrix
-
 from math import floor
 from time import time
 import numpy as np
@@ -19,6 +16,9 @@ from nn import euclidean_distance, eucl_dist_output_shape, contrastive_loss
 MNIST_SHAPE = (28, 28, 1)
 
 def siameseCNN(sub_net, input_shape):
+  '''
+  builds a siamese CNN with given subnet and input_shape
+  '''
 
   input_a = Input(input_shape)
   input_b = Input(input_shape)
@@ -36,6 +36,9 @@ def siameseCNN(sub_net, input_shape):
   return model
 
 def gen_siamese_pairs(pairs, data):
+  '''
+  generates list of pair data from pair index list
+  '''
   x_train_a = []
   x_train_b = []
 
@@ -59,6 +62,9 @@ def gen_siamese_pairs(pairs, data):
   return x_train_a, x_train_b
 
 def trainSiamese(withGPU=False):
+  '''
+  trains a siamese CNN with data from fashion MNIST
+  '''
   sub_net = five_convolutions(MNIST_SHAPE) if withGPU else three_convolutions(MNIST_SHAPE)
 
   print('\nSUBNET ARCHITECTURE')
@@ -97,16 +103,10 @@ def trainSiamese(withGPU=False):
 
   model.save_weights(outfile('fashion_siamese'))
 
-def eval_siamese(test_pred, test_labels):
-  test_pred = test_pred < 0.5
-  test_truth = np.array(test_labels)
-
-  print()
-  print("accuracy is: " + str(accuracy_score(y_pred, y_truth)))
-  print("confusion matrix:")
-  print(confusion_matrix(y_pred, y_truth))
-
 def trainCNN():
+  '''
+  trains a CNN with fashion MNIST data
+  '''
   (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
 
   x_train = np.array(x_train)
@@ -139,6 +139,8 @@ def trainCNN():
 
   score = model.evaluate(x_test, y_test, batch_size=128)
   print('loss: %f \t accuracy: %f' % tuple(score))
+
+  model.save(outfile('fashion_CNN'))
 
 def main():
   # trainCNN()

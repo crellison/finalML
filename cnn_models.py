@@ -29,6 +29,9 @@ def three_convolutions(inputShape):
 
 
 def five_convolutions(inputShape):
+  '''
+  five-layer CNN for use with a CPU
+  '''
   model = Sequential()
   model.add(Conv2D(32, (5, 5), padding='same',
                    activation='relu', input_shape=inputShape))
@@ -44,6 +47,8 @@ def five_convolutions(inputShape):
   model.add(MaxPooling2D())
 
   model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+  model.add(MaxPooling2D())
+  
   model.add(Flatten())
 
   model.add(Dense(256, activation='relu'))
