@@ -29,7 +29,7 @@ def get_train_data(scale_dataset=1.0):
     linenum = 0
     headers = next(datafile, None)
     for row in datafile:
-      filename = TRAIN_DATA + row[0] 
+      filename = row[0] 
       painterID = row[1]
       data.append((filename, painterID))
 
