@@ -95,7 +95,8 @@ def train_model(model, image_size, n_train_batches, data_path, pairs_csv):
     for i in range(n_train_batches):
         print('batch', i)
         train_batch_a, train_batch_b, train_batch_y = get_batch(train_pairs, i, batch_size, image_size)
-        #print('train batch a', train_batch_a.shape)
+        print('train batch a', train_batch_a.shape)
+        print('train batch b', train_batch_b.shape)
 
 
         model.train_on_batch([train_batch_a, train_batch_b], train_batch_y)
