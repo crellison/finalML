@@ -3,6 +3,9 @@ from keras.models import Sequential, Model
 from keras.layers import Conv2D, Dense, concatenate, Input, MaxPooling2D, Flatten, Dropout, Lambda
 from keras.layers.advanced_activations import LeakyReLU, PReLU
 from keras.utils import to_categorical
+from keras.optimizers import RMSprop
+
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 from math import floor
 from time import time
@@ -57,13 +60,14 @@ def siameseCNN(withGPU=False):
   features_a = sub_net(input_a)
   features_b = sub_net(input_b)
 
-  merged_features = concatenate([features_a, features_b], axis=-1)
+  # merged_features = concatenate([features_a, features_b], axis=-1)
 
   distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([features_a, features_b])
 
   model = Model(inputs=[input_a, input_b], outputs=distance)
 
-  model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy']) #'binary_crossentropy'
+  rms = RMSprop()
+  model.compile(optimizer=rms, loss=contrastive_loss) #'binary_crossentropy'
 
   return model
 
@@ -161,12 +165,18 @@ def trainSiamese():
 
   model.fit([x_train_a, x_train_b], train_labels,
             verbose=1,
-            epochs=10, batch_size=32,
+            epochs=1, batch_size=32,
             validation_split=0.2)
 
   x_test_a, x_test_b = make_data_from_pairs(test_pairs, x_test)
-  score = model.evaluate([x_test_a, x_test_b], test_labels, batch_size=256)
-  print('loss: %f \t accuracy: %f' % tuple(score))
+
+  y_pred = model.predict([x_test_a, x_test_b], batch_size=128)
+  y_pred = np.argmax(y_pred, axis=0)
+  y_truth = np.argmax(test_labels, axis=0)
+
+  print("accuracy is: " + str(accuracy_score(y_pred, y_truth)))
+  print("confusion matrix:")
+  print(confusion_matrix(y_pred, y_truth))
 
   model.save_weights(outfile())
 
