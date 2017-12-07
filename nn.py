@@ -4,12 +4,12 @@ import process_images
 from keras.backend import variable as MakeTensor
 from keras.models import Model, Sequential
 from keras.layers import Conv2D, Lambda, Dense, concatenate, Input, MaxPooling2D, Flatten
-from keras import backend as K
 from keras.models import model_from_json
 from sys import argv
 import csv
 import numpy as np
 import os
+from siamese_utils import eucl_dist_output_shape, euclidean_distance, contrastive_loss
 
 IMAGE_WIDTH = 100
 
@@ -163,17 +163,6 @@ def get_image(path):
 
         return image.astype('float32')
 
-def eucl_dist_output_shape(shapes):
-    shape1, shape2 = shapes
-    return shape1[0], 1
-
-def euclidean_distance(vects):
-    x, y = vects
-    return K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True))
-
-def contrastive_loss(y_true, y_pred):
-    margin = 1
-    return K.mean(y_true * K.square(y_pred) + (1 - y_true) * K.square(K.maximum(margin - y_pred, 0)))
 
 def main():
     # TODO: Get size from image

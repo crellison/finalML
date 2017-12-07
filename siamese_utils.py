@@ -1,5 +1,6 @@
 from sklearn.metrics import accuracy_score, confusion_matrix
 from random import sample, randint, choice
+from keras import backend as K
 from PIL import Image
 
 def show_img(img):
@@ -58,3 +59,18 @@ def eval_siamese(test_pred, test_labels):
   print("accuracy is: " + str(accuracy_score(y_pred, y_truth)))
   print("confusion matrix:")
   print(confusion_matrix(y_pred, y_truth))
+
+
+def eucl_dist_output_shape(shapes):
+    shape1, shape2 = shapes
+    return shape1[0], 1
+
+
+def euclidean_distance(vects):
+    x, y = vects
+    return K.sqrt(K.sum(K.square(x - y), axis=1, keepdims=True))
+
+
+def contrastive_loss(y_true, y_pred):
+    margin = 1
+    return K.mean(y_true * K.square(y_pred) + (1 - y_true) * K.square(K.maximum(margin - y_pred, 0)))
