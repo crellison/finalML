@@ -51,8 +51,7 @@ def create_pairs(label_map):
 
   return labels, pairs
 
-def siameseCNN(withGPU=False):
-  sub_net = fashion_network() if withGPU else small_fashion_network()
+def siameseCNN(sub_net):
 
   input_a = Input(MNIST_SHAPE)
   input_b = Input(MNIST_SHAPE)
@@ -81,6 +80,7 @@ def small_fashion_network():
   model.add(MaxPooling2D())
   # input 14 x 14
   model.add(Conv2D(16, (5, 5), padding='same', activation='relu'))
+  model.add(MaxPooling2D())
   model.add(MaxPooling2D())
   # input 7 x 7
   model.add(Conv2D(32, (3, 3), activation='relu'))
@@ -136,17 +136,24 @@ def make_data_from_pairs(pairs, data):
   x_train_a /= 255
   x_train_b /= 255
 
-  print(x_train_a.shape)
   return x_train_a, x_train_b
 
 def outfile():
   signature = floor(time())
   return 'fashion_model_%i.h5' % signature
 
-def trainSiamese():
-  model = siameseCNN()
+def trainSiamese(withGPU=False):
+  sub_net = fashion_network() if withGPU else small_fashion_network()
+
+  print('SUBNET ARCHITECTURE')
+  print(sub_net.summary())
+  print('\n')
+
+  model = siameseCNN(sub_net)
+  print('SIAMESE ARCHITECTURE')
   print(model.summary())
- 
+  print('\n')
+  
   (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
 
   x_train = np.array(x_train)
@@ -165,15 +172,18 @@ def trainSiamese():
 
   model.fit([x_train_a, x_train_b], train_labels,
             verbose=1,
-            epochs=1, batch_size=32,
+            epochs=10, batch_size=32,
             validation_split=0.2)
 
   x_test_a, x_test_b = make_data_from_pairs(test_pairs, x_test)
 
   y_pred = model.predict([x_test_a, x_test_b], batch_size=128)
-  y_pred = np.argmax(y_pred, axis=0)
-  y_truth = np.argmax(test_labels, axis=0)
+  y_pred = y_pred < 0.5
+  y_truth = np.array(test_labels)
+  # y_pred = np.argmax(y_pred, axis=0)
+  # y_truth = np.argmax(test_labels, axis=0)
 
+  print()
   print("accuracy is: " + str(accuracy_score(y_pred, y_truth)))
   print("confusion matrix:")
   print(confusion_matrix(y_pred, y_truth))
