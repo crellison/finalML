@@ -9,6 +9,7 @@ from sys import argv
 import csv
 import numpy as np
 import os
+
 from siamese_utils import eucl_dist_output_shape, euclidean_distance, contrastive_loss
 
 IMAGE_WIDTH = 100
