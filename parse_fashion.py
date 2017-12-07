@@ -5,8 +5,6 @@ from keras.layers.advanced_activations import LeakyReLU, PReLU
 from keras.utils import to_categorical
 from keras.optimizers import RMSprop
 
-from math import floor
-from time import time
 import numpy as np
 
 from siamese_utils import *

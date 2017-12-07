@@ -2,6 +2,8 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from random import sample, randint, choice
 from keras import backend as K
 from PIL import Image
+from math import floor
+from time import time
 
 def show_img(img):
   ''' opens image with  builtin viewer '''
