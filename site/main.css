@@ -1,0 +1,53 @@
+/* 
+  colors
+  black - #0C120C
+  grey  - #6D7275
+  white - #F2F2F2
+  red   - #C20114
+*/
+
+body {
+  font-family: 'Avenir Next', Helvetica, sans-serif;
+  margin: 0;
+  background: #F2F2F2;
+  color: #0C120C;
+}
+
+code {
+  display: block;
+  white-space: pre-wrap  
+}
+
+.site-title {
+  color: #F2F2F2;
+  background: #0C120C;
+  padding: 0.5em 1em;
+}
+
+.subtitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section {
+  padding: 0.5em 1em;
+}
+
+.quote {
+  background: #6D7275;
+  color: #F2F2F2;
+  margin: 0.25em 0.75em;
+  padding: 0.25em 0.75em;
+}
+
+.inline-image {
+  width: 90%;
+  padding: 2% 5%;
+  max-width: 500px;
+}
+
+.fixed-width {
+  font-family: 'Source Code Pro', 'Courier New', Courier, monospace;
+  /* display: flex; */
+}
