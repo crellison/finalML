@@ -9,7 +9,6 @@ import numpy as np
 
 from siamese_utils import *
 from cnn_models import *
-from siamese import euclidean_distance, eucl_dist_output_shape, contrastive_loss
 
 MNIST_SHAPE = (28, 28, 1)
 
