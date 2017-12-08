@@ -1,13 +1,11 @@
 from PIL import Image
 import os
-import numpy
-from collections import Counter
 
 IMAGE_PATH = os.path.join('data', 'train')
 
 def get_size_info():
-    widths = Counter()
-    heights = Counter()
+    widths = []
+    heights = []
 
     print(os.path.abspath(IMAGE_PATH))
 
@@ -25,7 +23,7 @@ def get_size_info():
 def main():
     widths, heights, median_size = get_size_info()
     print('Median image size: ', median_size)
-    # OUTPUTS (800, 800)
+    # OUTPUTS (800, 800) for large painting data set
     print(widths)
     print(heights)
 
