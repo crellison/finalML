@@ -5,62 +5,24 @@ from keras.layers.advanced_activations import LeakyReLU, PReLU
 from keras.utils import to_categorical
 from keras.optimizers import RMSprop
 
-from sklearn.metrics import accuracy_score, confusion_matrix
-
-from math import floor
-from time import time
-from random import sample, randint, choice
 import numpy as np
 
+from siamese_utils import *
+from cnn_models import *
 from nn import euclidean_distance, eucl_dist_output_shape, contrastive_loss
-
-from PIL import Image as pImage
 
 MNIST_SHAPE = (28, 28, 1)
 
-def show_img(img):
-  img_ = img * 255
-  img_ = pImage.fromarray(img_, mode='L')
-  img_.show(command='fim')
+def siameseCNN(sub_net, input_shape):
+  '''
+  builds a siamese CNN with given subnet and input_shape
+  '''
 
-def make_hash(y_data):
-  label_map = {x:list() for x in range(10)}
-  for i in range(len(y_data)):
-    label = y_data[i]
-    label_map[label].append(i)
-  return label_map
-
-def create_pairs(label_map):
-  smallest_group = min(len(label_map[label]) for label in range(10)) - 1
-  pairs = []
-  labels = []
-  for label in range(10):
-    for pair_num in range(smallest_group):
-      a,b = sample(label_map[label], 2)
-
-      other_label = randint(0,9)
-
-      if other_label == label:
-        other_label = (other_label + 1) % 10
-
-      c = choice(label_map[label])
-      d = choice(label_map[other_label])
-
-      pairs.extend([(a,b), (c,d)])
-      labels.extend([1,0])
-
-  return labels, pairs
-
-def siameseCNN(withGPU=False):
-  sub_net = fashion_network() if withGPU else small_fashion_network()
-
-  input_a = Input(MNIST_SHAPE)
-  input_b = Input(MNIST_SHAPE)
+  input_a = Input(input_shape)
+  input_b = Input(input_shape)
 
   features_a = sub_net(input_a)
   features_b = sub_net(input_b)
-
-  # merged_features = concatenate([features_a, features_b], axis=-1)
 
   distance = Lambda(euclidean_distance, output_shape=eucl_dist_output_shape)([features_a, features_b])
 
@@ -71,51 +33,10 @@ def siameseCNN(withGPU=False):
 
   return model
 
-def small_fashion_network():
+def gen_siamese_pairs(pairs, data):
   '''
-  smaller CNN model for use w/o GPU
+  generates list of pair data from pair index list
   '''
-  model = Sequential()
-  # input 28x28
-  model.add(Conv2D(16, (5, 5), padding='same', activation='relu', input_shape=MNIST_SHAPE))
-  model.add(MaxPooling2D())
-  # input 14 x 14
-  model.add(Conv2D(16, (5, 5), padding='same', activation='relu'))
-  model.add(MaxPooling2D())
-  # input 7 x 7
-  model.add(Conv2D(32, (3, 3), activation='relu'))
-  # input 5 x 5
-  model.add(Flatten())
-  # input 800
-  model.add(Dense(64, activation='relu'))
-
-  model.add(Dense(10, activation='sigmoid'))
-  model.compile(optimizer='sgd',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-  return model
-
-def fashion_network():
-  # input 28x28
-  model = Sequential()
-  model.add(Conv2D(32, (5, 5), padding='same', activation='relu', input_shape=MNIST_SHAPE))
-  model.add(Dropout(0.1))
-  model.add(Conv2D(64, (5, 5), padding='same', activation='relu'))
-  model.add(Dropout(0.1))
-  model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-  model.add(MaxPooling2D())
-  model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-  model.add(MaxPooling2D())
-  model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-  model.add(Flatten())
-  model.add(Dense(256, activation='relu'))
-  model.add(Dense(10, activation='sigmoid'))
-  model.compile(optimizer='sgd',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-  return model
-
-def make_data_from_pairs(pairs, data):
   x_train_a = []
   x_train_b = []
 
@@ -136,17 +57,22 @@ def make_data_from_pairs(pairs, data):
   x_train_a /= 255
   x_train_b /= 255
 
-  print(x_train_a.shape)
   return x_train_a, x_train_b
 
-def outfile():
-  signature = floor(time())
-  return 'fashion_model_%i.h5' % signature
+def trainSiamese(withGPU=False):
+  '''
+  trains a siamese CNN with data from fashion MNIST
+  '''
+  sub_net = five_convolutions(MNIST_SHAPE) if withGPU else three_convolutions(MNIST_SHAPE)
 
-def trainSiamese():
-  model = siameseCNN()
+  print('\nSUBNET ARCHITECTURE')
+  print(sub_net.summary())
+
+  model = siameseCNN(sub_net, MNIST_SHAPE)
+  print('\nSIAMESE ARCHITECTURE')
   print(model.summary())
- 
+  print('\n')
+
   (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
 
   x_train = np.array(x_train)
@@ -161,26 +87,24 @@ def trainSiamese():
   # train_labels = to_categorical(train_labels)
   # test_labels = to_categorical(test_labels)
 
-  x_train_a, x_train_b = make_data_from_pairs(train_pairs, x_train)
+  x_train_a, x_train_b = gen_siamese_pairs(train_pairs, x_train)
 
   model.fit([x_train_a, x_train_b], train_labels,
             verbose=1,
-            epochs=1, batch_size=32,
+            epochs=10, batch_size=32,
             validation_split=0.2)
 
-  x_test_a, x_test_b = make_data_from_pairs(test_pairs, x_test)
+  x_test_a, x_test_b = gen_siamese_pairs(test_pairs, x_test)
 
-  y_pred = model.predict([x_test_a, x_test_b], batch_size=128)
-  y_pred = np.argmax(y_pred, axis=0)
-  y_truth = np.argmax(test_labels, axis=0)
+  test_pred = model.predict([x_test_a, x_test_b], batch_size=128)
+  eval_siamese(test_pred, test_labels)
 
-  print("accuracy is: " + str(accuracy_score(y_pred, y_truth)))
-  print("confusion matrix:")
-  print(confusion_matrix(y_pred, y_truth))
-
-  model.save_weights(outfile())
+  model.save_weights(outfile('fashion_siamese'))
 
 def trainCNN():
+  '''
+  trains a CNN with fashion MNIST data
+  '''
   (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
 
   x_train = np.array(x_train)
@@ -204,7 +128,7 @@ def trainCNN():
 
   # x is image, y is label
   # model = fashion_network()
-  model = small_fashion_network()
+  model = three_convolutions(MNIST_SHAPE)
   print(model.summary())
   model.fit(x_train, y_train, verbose=1,
             epochs=10, batch_size=32,
@@ -213,6 +137,8 @@ def trainCNN():
 
   score = model.evaluate(x_test, y_test, batch_size=128)
   print('loss: %f \t accuracy: %f' % tuple(score))
+
+  model.save(outfile('fashion_CNN'))
 
 def main():
   # trainCNN()
