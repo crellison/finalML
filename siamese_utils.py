@@ -60,9 +60,9 @@ def eval_siamese(test_pred, test_labels):
     test_truth = np.array(test_labels)
 
     print()
-    print("accuracy is: " + str(accuracy_score(y_pred, y_truth)))
+    print("accuracy is: " + str(accuracy_score(test_pred, test_labels)))
     print("confusion matrix:")
-    print(confusion_matrix(y_pred, y_truth))
+    print(confusion_matrix(test_pred, test_labels))
 
 
 def eucl_dist_output_shape(shapes):
