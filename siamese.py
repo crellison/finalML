@@ -9,6 +9,7 @@ import os
 import sys
 
 import siamese_utils
+from siamese_utils import *
 
 IMAGE_DIM = 100
 
@@ -95,7 +96,7 @@ def train_model(model, image_size, n_train_batches, pairs_csv):
 
         model.train_on_batch([train_batch_a, train_batch_b], train_batch_y)
 
-    model.save(OUTPUT_FILE)
+    model.save(outfile(OUTPUT_FILE))
 
     # Test image batches
     all_predictions = np.ndarray((1, 1))
