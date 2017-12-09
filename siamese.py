@@ -1,11 +1,12 @@
 from PIL import Image
 import process_images
 from keras.backend import variable
-from keras.models import Model, Sequential
+from keras.models import Model, Sequential, load_model
 from keras.layers import Conv2D, Lambda, Dense, Input, MaxPooling2D, Flatten
 import csv
 import numpy as np
 import os
+import sys
 
 import siamese_utils
 
@@ -17,7 +18,7 @@ CV_TEST_SPLIT = 0.8
 BATCH_SIZE = 32
 
 DATA_DIR = os.path.join('data', 'train')
-OUTPUT_FILE = os.path.join('Models', 'painting_weights.h5')
+OUTPUT_FILE = os.path.join('Models', 'painting_weights')
 
 
 def create_model(input_shape, sub_net_choice):
@@ -94,7 +95,7 @@ def train_model(model, image_size, n_train_batches, pairs_csv):
 
         model.train_on_batch([train_batch_a, train_batch_b], train_batch_y)
 
-    model.save_weights(OUTPUT_FILE)
+    model.save(OUTPUT_FILE)
 
     # Test image batches
     all_predictions = np.ndarray((1, 1))
@@ -148,11 +149,39 @@ def image_to_tensor(path):
     return variable(Image.open(path))
 
 
+def load_trained_model(pretrained_model_file):
+    # because it is a custom loss function we need to provide that through "custom_objects"
+    return load_model(pretrained_model_file, custom_objects={'contrastive_loss': siamese_utils.contrastive_loss})
+
+def competition_test_model(model, pairs_csv):
+    # Open the pre-made file of pairs
+    with open(pairs_csv) as pairs_file:
+        reader = csv.reader(pairs_file)
+        next(reader, None) # Skips the header.
+        pairs = [tuple(line) for line in reader]
+
+        print(len(pairs))
+
+    # there are 21916047 pairs in the test set
+
 def main():
-    # TODO: Get size from image
-    model = create_model((IMAGE_DIM, IMAGE_DIM, 3), 'large')
-    print(model.summary())
-    train_model(model, (IMAGE_DIM, IMAGE_DIM, 3), 500, os.path.join('data', 'pairwise_train_info.csv'))
+    # This condition will change depending on what params, we'd like to play with:
+    if len(sys.argv) < 2:
+        model = create_model((IMAGE_DIM, IMAGE_DIM, 3), 'large')
+        print(model.summary())
+        train_model(model, (IMAGE_DIM, IMAGE_DIM, 3), 500, os.path.join('data', 'pairwise_train_info.csv'))
+
+    # Pre-trained model provided:
+    else:
+        model = load_trained_model(sys.argv[1])
+
+        # competition_test_model(3, os.path.join('data', 'submission_info.csv'))
+#         assumes: submission info in data
+#         TODO: run on testing set
+
+
+
+
 
 
 if __name__ == '__main__':
