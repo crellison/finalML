@@ -19,7 +19,7 @@ CV_TEST_SPLIT = 0.8
 BATCH_SIZE = 32
 
 DATA_DIR = os.path.join('data', 'train')
-OUTPUT_FILE = os.path.join('Models', 'painting_weights')
+OUTPUT_FILE = os.path.join('Models', 'painting_model')
 
 
 def create_model(input_shape, sub_net_choice):
@@ -154,6 +154,7 @@ def load_trained_model(pretrained_model_file):
     # because it is a custom loss function we need to provide that through "custom_objects"
     return load_model(pretrained_model_file, custom_objects={'contrastive_loss': siamese_utils.contrastive_loss})
 
+# TODO:
 def competition_test_model(model, pairs_csv):
     # Open the pre-made file of pairs
     with open(pairs_csv) as pairs_file:
@@ -163,7 +164,46 @@ def competition_test_model(model, pairs_csv):
 
         print(len(pairs))
 
+    output = open('comp_output.txt', 'w+')
+
+    output.write('index, sameArtist\n')
+
+
+    for batch in range(2):
+        batch_index, batch_a, batch_b = get_competition_batch(pairs, batch)
+        
+
+        predictions_batch = model.predict_on_batch([batch_a, batch_b])
+
+        print(predictions_batch)
+
+        for prediction in range(len(predictions_batch)):
+            out = '%d' % batch_index[prediction] + ',' + str(predictions_batch[prediction]) + '\n'
+            output.write(out)
+
+    output.close()
+
     # there are 21916047 pairs in the test set
+
+
+
+def get_competition_batch(pairs, batch_id):
+    batch_a = np.zeros((BATCH_SIZE, IMAGE_DIM, IMAGE_DIM, 3), dtype="float32")
+    batch_b = np.zeros((BATCH_SIZE, IMAGE_DIM, IMAGE_DIM, 3), dtype="float32")
+    batch_index = np.zeros(BATCH_SIZE, dtype="float32")
+
+    for j in range(BATCH_SIZE):
+        #
+        # Configure this to fit your file structure...
+        #
+        batch_a[j] = get_image(os.path.join('data', 'small', 'test', pairs[batch_id * BATCH_SIZE + j][1]))
+        batch_b[j] = get_image(os.path.join('data', 'small', 'test', pairs[batch_id * BATCH_SIZE + j][2]))
+
+        # error will crash this...
+
+        batch_index[j] = pairs[batch_id * BATCH_SIZE + j][0]
+
+    return batch_index, batch_a, batch_b
 
 def main():
     # This condition will change depending on what params, we'd like to play with:
@@ -174,9 +214,18 @@ def main():
 
     # Pre-trained model provided:
     else:
-        model = load_trained_model(sys.argv[1])
+        # If the passed in file is a whole model, not just weights:
+        # if bool(sys.argv[2]):
+        #     # model = load_trained_model(sys.argv[1])
+        #     print('this filetype is not ready yet')
+        # # Just have the weights:
+        # else:
+        model = create_model((IMAGE_DIM, IMAGE_DIM, 3), 'large')
+        model.load_weights('painting_weights.h5')
 
-        # competition_test_model(3, os.path.join('data', 'submission_info.csv'))
+
+
+        competition_test_model(model, os.path.join('data', 'submission_info.csv'))
 #         assumes: submission info in data
 #         TODO: run on testing set
 
