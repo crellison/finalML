@@ -1,12 +1,11 @@
 from keras.datasets import fashion_mnist
-from keras.models import Sequential, Model
+from keras.models import Sequential, Model, load_model
 from keras.layers import Conv2D, Dense, concatenate, Input, MaxPooling2D, Flatten, Dropout, Lambda
 from keras.layers.advanced_activations import LeakyReLU, PReLU
 from keras.utils import to_categorical
 from keras.optimizers import RMSprop
-
+import sys
 import numpy as np
-
 from siamese_utils import *
 from cnn_models import *
 
@@ -61,47 +60,58 @@ def gen_siamese_pairs(pairs, data):
     return x_train_a, x_train_b
 
 
-def trainSiamese(withGPU=False):
+def trainSiamese(with_GPU=False, pre_trained_file=''):
     """
-    trains a siamese CNN with data from fashion MNIST
+    trains a siamese CNN with data from fashion MNIST, or loads a pretrained model
     """
-    sub_net = five_convolutions(MNIST_SHAPE) if withGPU else three_convolutions(MNIST_SHAPE)
 
-    print('\nSUBNET ARCHITECTURE')
-    print(sub_net.summary())
-
-    model = siameseCNN(sub_net, MNIST_SHAPE)
-    print('\nSIAMESE ARCHITECTURE')
-    print(model.summary())
-    print('\n')
-
+    # Loading Image Data:
     (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
 
-    x_train = np.array(x_train)
+    # Siamese net training:
+    if pre_trained_file == '':
+        sub_net = five_convolutions(MNIST_SHAPE) if with_GPU else three_convolutions(MNIST_SHAPE)
+
+        print('\nSUBNET ARCHITECTURE')
+        print(sub_net.summary())
+
+        model = siameseCNN(sub_net, MNIST_SHAPE)
+        print('\nSIAMESE ARCHITECTURE')
+        print(model.summary())
+        print('\n')
+
+        x_train = np.array(x_train)
+        x_train_hash = make_hash(y_train)
+        train_labels, train_pairs = create_pairs(x_train_hash)
+        x_train_a, x_train_b = gen_siamese_pairs(train_pairs, x_train)
+
+        model.fit([x_train_a, x_train_b], train_labels,
+                  verbose=1,
+                  epochs=5, batch_size=32,
+                  validation_split=0.2)
+
+        model_file = outfile('fashion_siamese')
+        print('Saving trained model to: ' + model_file)
+        model.save(model_file)
+
+    # Skip Training If a Pre-trained Model is Provided:
+    else:
+        model = load_model(pre_trained_file, custom_objects={'contrastive_loss': contrastive_loss})
+
+        print('\nSIAMESE ARCHITECTURE')
+        print(model.summary())
+        print('\n')
+        print("Using the provided, pre-trained model")
+
+    # Testing the Model:
     x_test = np.array(x_test)
-
-    x_train_hash = make_hash(y_train)
     x_test_hash = make_hash(y_test)
-
-    train_labels, train_pairs = create_pairs(x_train_hash)
     test_labels, test_pairs = create_pairs(x_test_hash)
-
-    # train_labels = to_categorical(train_labels)
-    # test_labels = to_categorical(test_labels)
-
-    x_train_a, x_train_b = gen_siamese_pairs(train_pairs, x_train)
-
-    model.fit([x_train_a, x_train_b], train_labels,
-              verbose=1,
-              epochs=10, batch_size=32,
-              validation_split=0.2)
 
     x_test_a, x_test_b = gen_siamese_pairs(test_pairs, x_test)
 
     test_pred = model.predict([x_test_a, x_test_b], batch_size=128)
     eval_siamese(test_pred, test_labels)
-
-    model.save_weights(outfile('fashion_siamese'))
 
 
 def trainCNN():
@@ -146,7 +156,8 @@ def trainCNN():
 
 def main():
     # trainCNN()
-    trainSiamese()
+    pre_trained_file = '' if len(sys.argv) < 2 else sys.argv[1]
+    trainSiamese(pre_trained_file=pre_trained_file)
 
 
 if __name__ == '__main__':
