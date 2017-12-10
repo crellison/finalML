@@ -1,0 +1,20 @@
+\BOOKMARK [1][-]{section.1}{Links}{}% 1
+\BOOKMARK [1][-]{section.2}{Introduction}{}% 2
+\BOOKMARK [1][-]{section.3}{Experimental Setup}{}% 3
+\BOOKMARK [2][-]{subsection.3.1}{Description of Datasets}{section.3}% 4
+\BOOKMARK [2][-]{subsection.3.2}{Painter by Numbers Dataset}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.3}{MNIST Fashion and Digit Datasets}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.4}{Siamese Network Input Shape}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.5}{Data Generation}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.6}{Generating Batches for the Painting Network}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.7}{Problems with the Output of the Models}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.8}{Training with a GPU}{section.3}% 11
+\BOOKMARK [2][-]{subsection.3.9}{Standalone CNN Application for practice}{section.3}% 12
+\BOOKMARK [1][-]{section.4}{Results}{}% 13
+\BOOKMARK [2][-]{subsection.4.1}{Arrangement of the Confusion Matrix}{section.4}% 14
+\BOOKMARK [2][-]{subsection.4.2}{Standalone CNN Fashion Classifier}{section.4}% 15
+\BOOKMARK [2][-]{subsection.4.3}{Siamese Model for Dashion and Digit Data}{section.4}% 16
+\BOOKMARK [2][-]{subsection.4.4}{Siamese Model Applied to Different Data: Zero-Shot-Learning}{section.4}% 17
+\BOOKMARK [2][-]{subsection.4.5}{Siamese model for painting data}{section.4}% 18
+\BOOKMARK [1][-]{section.5}{Conclusions}{}% 19
+\BOOKMARK [1][-]{section.6}{Acknowledgements}{}% 20
