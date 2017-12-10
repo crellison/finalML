@@ -1,10 +1,8 @@
-from PIL import Image
 import process_images
 from keras.backend import variable
 from keras.models import Model, Sequential, load_model
 from keras.layers import Conv2D, Lambda, Dense, Input, MaxPooling2D, Flatten
 import csv
-import numpy as np
 import os
 import sys
 
@@ -19,7 +17,7 @@ CV_TEST_SPLIT = 0.9
 BATCH_SIZE = 8
 
 DATA_DIR = os.path.join('data', 'train')
-OUTPUT_FILE = os.path.join('Models', 'painting_model')
+OUTPUT_FILE = os.path.join('Models', 'painting_model.h5')
 
 
 def create_model(input_shape, sub_net_choice):
@@ -108,7 +106,7 @@ def train_model(model, image_size, epochs, pairs_csv):
 
     # Save the model for
     print('Training finished. Saving model.')
-    model.save(outfile(OUTPUT_FILE))
+    model.save(OUTPUT_FILE)
 
 
     # CV image batch collectors, first element ignored later
@@ -182,11 +180,11 @@ def generate_predictions(model, pairs_csv):
     output.write('index, sameArtist\n')
 
 
-    for batch in range(2):
+    for batch in range(100):
         batch_index, batch_a, batch_b = get_competition_batch(pairs, batch)
         predictions_batch = model.predict_on_batch([batch_a, batch_b])
         for prediction in range(len(predictions_batch)):
-            out = '%d' % batch_index[prediction] + ',' + str(predictions_batch[prediction]) + '\n'
+            out = '%d' % batch_index[prediction] + ',' + str(predictions_batch[prediction][0]) + '\n'
             output.write(out)
 
 
@@ -221,28 +219,13 @@ def main():
     if len(sys.argv) < 2:
         model = create_model((IMAGE_DIM, IMAGE_DIM, 3), 'large')
         print(model.summary())
-        train_model(model, (IMAGE_DIM, IMAGE_DIM, 3), 0.000005, os.path.join('data', 'pairwise_train_info.csv'))
+        train_model(model, (IMAGE_DIM, IMAGE_DIM, 3), 0.0005, os.path.join('data', 'pairwise_train_info.csv'))
 
     # Pre-trained model provided:
     else:
         # If the passed in file is a whole model, not just weights:
-        # if bool(sys.argv[2]):
-        model = load_trained_model(os.path.join('models','painting_model_model_1512870158.h5'))
-        #     print('this filetype is not ready yet')
-        # # Just have the weights:
-        # else:
-        # model = create_model((IMAGE_DIM, IMAGE_DIM, 3), 'large')
-        # model.load_weights(os.path.join('models','painting_model_model_1512870158.h5'))
-
-
-
+        model = load_trained_model(os.path.join('models','painting_model.h5'))
         generate_predictions(model, os.path.join('data', 'submission_info.csv'))
-#         assumes: submission info in data
-#         TODO: run on testing set
-
-
-
-
 
 
 if __name__ == '__main__':
