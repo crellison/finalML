@@ -22,3 +22,4 @@ fdytg.py
 __pycache__
 *.DS_Store
 
+*.h5

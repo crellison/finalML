@@ -6,7 +6,7 @@ TODO
 - [x] func to get training data
 - [x] plan for convolutional neural network (CNN) architecture
 - [x] initial test results from subset of training data
-- [ ] run it on the GPU for a benchmark
+- [x] run it on the GPU for a benchmark
 - [ ] figure out what is actually going on
 
 Good Stuff (links we like)
