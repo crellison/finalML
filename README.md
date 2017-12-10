@@ -6,7 +6,7 @@ TODO
 - [x] func to get training data
 - [x] plan for convolutional neural network (CNN) architecture
 - [x] initial test results from subset of training data
-- [ ] run it on the GPU for a benchmark
+- [x] run it on the GPU for a benchmark
 - [ ] figure out what is actually going on
 
 Good Stuff (links we like)
@@ -17,6 +17,7 @@ Good Stuff (links we like)
 - [CNN Understanding with Dogs](https://adeshpande3.github.io/A-Beginner%27s-Guide-To-Understanding-Convolutional-Neural-Networks-Part-2/)
 
 
-Implementation Examples:
+Acknowledgements, Implementation Examples That Were Helpful For Us:
 - [One Shot Learning With Keras And Siamese Nets](https://sorenbouma.github.io/blog/oneshot/)
 - [Supervised Siamese CNN Network](https://github.com/ascourge21/Siamese/blob/master/siamese_supervised/Model1.py)
+- [Small Yellow Duck Siamese Mnist Net](https://github.com/small-yellow-duck/kaggle_art/blob/master/mnist_siamese_cnn.py)
